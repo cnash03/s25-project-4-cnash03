@@ -23,7 +23,7 @@ std::shared_ptr<SchedulingDecision> FCFSScheduler::get_next_thread() {
             return next_thread;
         }
         next_thread->thread = fcfs_queue.front();
-        next_thread->explanation = "Selected from " +std::to_string(this->size) + " threads. Will run to completion of burst.";
+        next_thread->explanation = "Selected from " +std::to_string(this->size()) + " threads. Will run to completion of burst.";
         fcfs_queue.pop();
         return next_thread;
 }

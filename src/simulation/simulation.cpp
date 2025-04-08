@@ -18,7 +18,7 @@ Simulation::Simulation(FlagOptions flags) {
 
     // TODO: Add your other algorithms as you make them
     } else if (flags.scheduler == "RR"){
-        this->scheduler = std::make_shared<RRScehduler>(flags.time_slice);
+        this->scheduler = std::make_shared<RRScheduler>(flags.time_slice);
     } else {
         throw("No scheduler found for " + flags.scheduler);
     }
