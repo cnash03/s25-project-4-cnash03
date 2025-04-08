@@ -11,7 +11,11 @@
 */
 
 RRScheduler::RRScheduler(int slice) {
-    //TODO Implement me
+    if(slice == -1){
+        this->time_slice = 3;
+    } else{
+        this->time_slice=slice;
+    }
 }
 
 std::shared_ptr<SchedulingDecision> RRScheduler::get_next_thread() {

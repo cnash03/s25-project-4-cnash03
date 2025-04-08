@@ -29,7 +29,7 @@ public:
     //  Member functions
     //==================================================
 
-    RRScheduler(int slice = 3);
+    RRScheduler(int slice);
 
     std::shared_ptr<SchedulingDecision> get_next_thread();
 

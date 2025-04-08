@@ -21,7 +21,7 @@ public:
     //  Member variables
     //==================================================
 
-    // TODO: Add any member variables you may need.
+    std::queue<std::shared_prt<Thread>> fcfs_queue;
 
     //==================================================
     //  Member functions
