@@ -3,6 +3,7 @@
 
 #include "algorithms/fcfs/fcfs_algorithm.hpp"
 #include "algorithms/rr/rr_algorithm.hpp"
+#include "algorithms/spn/spn_algorithm.hpp"
 // TODO: Include your other algorithms as you make them
 
 #include "simulation/simulation.hpp"
@@ -17,6 +18,8 @@ Simulation::Simulation(FlagOptions flags) {
         this->scheduler = std::make_shared<FCFSScheduler>();
 
     // TODO: Add your other algorithms as you make them
+    }else if (flags.scheduler == "SPN"){
+        this->scheduler = std::make_shared<SPNScheduler>();
     } else if (flags.scheduler == "RR"){
         this->scheduler = std::make_shared<RRScheduler>(flags.time_slice);
     } else {
@@ -25,6 +28,8 @@ Simulation::Simulation(FlagOptions flags) {
     this->flags = flags;
     this->logger = Logger(flags.verbose, flags.per_thread, flags.metrics);
 }
+
+
 
 void Simulation::run() {
     this->read_file(this->flags.filename);
@@ -219,6 +224,25 @@ SystemStats Simulation::calculate_statistics() {
             - cpu_utilization
             - cpu_efficiency
     */
+   for(map <int, Process*>::iterator iterate = pidMap.begin(); iterate != pidMap.end(); iterate++){
+        Process::Type type = iterate -> second -> get_type();
+        const std::vector<Thread*> threads = iterate -> second -> getThreads();
+
+        for(int i = 0; i < (int) threads.size(); i++){
+            int n = ++system_stats.thread_counts[type];
+
+            system_stats.avg_thread_response_times[type] = system_stats.avg_thread_response_times[type] * (n -1) / (n) + threads[i] -> get_response_time() * 1.0 / n;
+            system_stats.total_service_time += threads[i] -> get_service_time();
+            system_stats.total_io_time += threads[i] -> get_io_time();
+        }
+    }
+
+    system_stats.total_idle_time = system_stats.total_time - system_stats.dispatch_time - system_stats.total_service_time;
+    system_stats.cpu_utilization = (100.0 *(system_stats.dispatch_time + system_stats.total_service_time)) /system_stats.total_time;
+    system_stats.cpu_efficiency = (100.0 * system_stats.total_service_time) / system_stats.total_time;
+
+
+   
     return this->system_stats;
 }
 

@@ -22,7 +22,7 @@ public:
     //  Member variables
     //==================================================
 
-    // TODO: Add any member variables you may need.
+     std::deque<std::shared_ptr<Thread>> spn_queue;
 
     //==================================================
     //  Member functions

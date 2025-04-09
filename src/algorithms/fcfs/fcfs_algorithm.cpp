@@ -33,6 +33,5 @@ void FCFSScheduler::add_to_ready_queue(std::shared_ptr<Thread> thread) {
 }
 
 size_t FCFSScheduler::size() const {
-        // TODO: implement me!
         return fcfs_queue.size();
 }
