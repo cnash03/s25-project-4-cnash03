@@ -213,36 +213,49 @@ void Simulation::handle_dispatcher_invoked(const std::shared_ptr<Event> event) {
 //==============================================================================
 
 SystemStats Simulation::calculate_statistics() {
-    /*
-        TODO: Calculate the following system statistics:
-            - thread_counts[4]
-            - avg_thread_response_times[4]
-            - avg_thread_turnaround_times[4]
-            - total_service_time
-            - total_io_time
-            - total_idle_time
-            - cpu_utilization
-            - cpu_efficiency
-    */
-   for(map <int, Process*>::iterator iterate = pidMap.begin(); iterate != pidMap.end(); iterate++){
-        Process::Type type = iterate -> second -> get_type();
-        const std::vector<Thread*> threads = iterate -> second -> getThreads();
+    // Reset per-priority counters and averages.
+    for (int i = 0; i < 4; i++) {
+        system_stats.thread_counts[i] = 0;
+        system_stats.avg_thread_response_times[i] = 0.0;
+        system_stats.avg_thread_turnaround_times[i] = 0.0;
+    }
+    system_stats.total_service_time = 0;
+    system_stats.total_io_time = 0;
 
-        for(int i = 0; i < (int) threads.size(); i++){
+    for (const auto& procPair : this->processes) {
+         auto proc = procPair.second;
+        int type = static_cast<int>(proc->priority);
+
+       
+        for (size_t i = 0; i < proc->threads.size(); i++) {
             int n = ++system_stats.thread_counts[type];
 
-            system_stats.avg_thread_response_times[type] = system_stats.avg_thread_response_times[type] * (n -1) / (n) + threads[i] -> get_response_time() * 1.0 / n;
-            system_stats.total_service_time += threads[i] -> get_service_time();
-            system_stats.total_io_time += threads[i] -> get_io_time();
+            system_stats.avg_thread_response_times[type] =
+                (system_stats.avg_thread_response_times[type] * (n - 1) + proc->threads[i]->response_time()) / n;
+            system_stats.avg_thread_turnaround_times[type] =
+                (system_stats.avg_thread_turnaround_times[type] * (n - 1) + proc->threads[i]->turnaround_time()) / n;
+
+            system_stats.total_service_time +=  proc->threads[i]->service_time;
+            system_stats.total_io_time +=  proc->threads[i]->io_time;
         }
     }
 
     system_stats.total_idle_time = system_stats.total_time - system_stats.dispatch_time - system_stats.total_service_time;
-    system_stats.cpu_utilization = (100.0 *(system_stats.dispatch_time + system_stats.total_service_time)) /system_stats.total_time;
-    system_stats.cpu_efficiency = (100.0 * system_stats.total_service_time) / system_stats.total_time;
 
+    if (system_stats.total_time > 0) {
+        system_stats.cpu_utilization =
+            ((system_stats.total_time - system_stats.total_idle_time) / static_cast<double>(system_stats.total_time)) * 100.0;
+    } else {
+        system_stats.cpu_utilization = 0.0;
+    }
 
-   
+    if (system_stats.total_time > 0) {
+        system_stats.cpu_efficiency =
+            (system_stats.total_service_time / static_cast<double>(system_stats.total_time)) * 100.0;
+    } else {
+        system_stats.cpu_efficiency = 0.0;
+    }
+
     return this->system_stats;
 }
 
